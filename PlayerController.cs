@@ -8,13 +8,16 @@ public class PlayerController : MonoBehaviour
     private Animator playerAnim;
     private Rigidbody playerRb;
     private float gravityModifier = 1.0f;
-    private float jumpForce = 400;
+    private float jumpForce = 350;
     public bool isOnGround = true;
     public bool gameOver = false;
     public ParticleSystem explosionParticle;
     public ParticleSystem dirtParticle;
     public AudioClip jumpSound;
     public AudioClip crashSound;
+    private bool doubleJumpUsed = false;
+    private float doubleJumpForce = 200f;
+    public bool doubleSpeed = false;
 
     // Start is called before the first frame update
 
@@ -35,6 +38,26 @@ public class PlayerController : MonoBehaviour
             isOnGround = false;
             dirtParticle.Stop();
             playerAudio.PlayOneShot(jumpSound, 1.0f);
+
+            doubleJumpUsed = false;
+        }
+        else if(Input.GetKeyDown(KeyCode.Space) && !isOnGround && !doubleJumpUsed)
+        {
+            doubleJumpUsed = true;
+            playerRb.AddForce(Vector3.up * doubleJumpForce, ForceMode.Impulse);
+            playerAnim.Play("Running_Jump", 3, 0.0f);
+            playerAudio.PlayOneShot(jumpSound, 1.0f);
+        }
+
+        if(Input.GetKey(KeyCode.LeftShift))
+        {
+            doubleSpeed = true;
+            playerAnim.SetFloat("Speed_Multiplier", 2.0f);
+        }
+        else if (doubleSpeed)
+        {
+            doubleSpeed = false;
+            playerAnim.SetFloat("Speed_Multiplier", 1.0f);
         }
     }
 
@@ -42,7 +65,7 @@ public class PlayerController : MonoBehaviour
     {
         
 
-        if (collision.gameObject.CompareTag("Ground"))
+        if (collision.gameObject.CompareTag("Ground") && !gameOver)
         {
             isOnGround = true;
             dirtParticle.Play();
